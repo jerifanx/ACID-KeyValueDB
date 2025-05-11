@@ -39,14 +39,42 @@ class KeyValueStore {
         }
 
         bool put(const string& key, const string& value) {
-
+            lock_guard<mutex> lock(m);
+            data[key] = value;
+            addToLog("PUT " + key + " " + value);
+            return true;
         }
 
-        bool get(){
-
+        bool get(const string& key, string& value){
+            lock_guard<mutex> lock(m);
+            auto it = data.find(key);
+            if (it != data.end()) {
+                value = it->second;
+                return true;
+            }
+            return false;
         }
         
-        bool remove() {
+        bool remove(const string& key) {
+            lock_guard<mutex> lock(m);
+            auto it = data.find(key);
+            if (it != data.end()) {
+                data.erase(it);
+                addToLog("DELETE " + key);
+                return true;
+            }
+            return false;
+        }
 
+        shared_ptr<Transaction> beginTrasaction();
+        bool applyTransaction(const vector<pair<string, string>>& puts, const vector<string>& deletes);
+
+        void printAll() {
+            lock_guard<mutex> lock(m);
+            cout << "KeyValueStore contents:" << endl;
+            for (const auto& pair:data) {
+                cout << pair.first << " => " << pair.second << endl;
+            }
+            cout << endl;
         }
 };
