@@ -12,6 +12,7 @@
 
 using namespace std;
 
+class Transaction;
 class KeyValueStore {
     private:
         unordered_map<string, string> data;
